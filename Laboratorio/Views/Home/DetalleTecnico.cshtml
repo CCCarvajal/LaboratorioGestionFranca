@@ -50,38 +50,38 @@
     </div>
 </div>
 
-    <div class="accordion" id="accordionExample">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    Añadir Elemento
-                </button>
-            </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                    <div class="form-group row">
-                        <div class="col-sm-10 visually-hidden">
-                            <label class="form-label">Codigo técnico</label>
-                            <select id="InputTecnico" class="form-control">
-                            </select>
-                        </div>
-                        <div class="col-sm-10">
-                            <label class="form-label">Código ELementos</label>
-                            <select id="InputElementos" class="form-control">
-                            </select>
-                        </div>
-                        <div class="col-sm-10">
-                            <label class="form-label">Cantidad</label>
-                            <input type="number" class="form-control" id="InputCantidad" placeholder="Cantidad">
-                        </div>
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Añadir Elemento
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+                <div class="form-group row">
+                    <div class="col-sm-10 visually-hidden">
+                        <label class="form-label">Codigo técnico</label>
+                        <select id="InputTecnico" class="form-control">
+                        </select>
                     </div>
                     <div class="col-sm-10">
-                        <button onclick="AgregaElemento()">Agregar Elemento</button>
+                        <label class="form-label">Código ELementos</label>
+                        <select id="InputElementos" class="form-control">
+                        </select>
                     </div>
+                    <div class="col-sm-10">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="InputCantidad" placeholder="Cantidad">
+                    </div>
+                </div>
+                <div class="col-sm-10">
+                    <button onclick="AgregaElemento()">Agregar Elemento</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 
 <script>
@@ -98,9 +98,38 @@
         // Consultamos Elementos del técnico
         consultarElementos();
 
+        // Consultamos Elementos del técnico
+        consultarElementosTabla(codigo);
+
         // Consultamos Sucursales
         consultaSucursales();
     });
+
+    async function consultarElementosTabla(codigo) {
+        const response = await fetch('/Home/ConsultarElementosTabla', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "Codigo": codigo })
+        });
+
+        const data = await response.json();
+        html = "";
+        console.log("elementos");
+        console.log(data);
+
+        //Damos forma a los datos
+        data.forEach(item => {
+            html += `<tr>
+                        <td>${item.elemento.codigo}</td>
+                        <td>${item.elemento.nombre}</td>
+                        <td>${item.relacionTecnicoElemento.cantidad}</td>
+                    </tr>`;
+        });
+        console.log(html)
+        $('#CuerpoTabla').html(html);
+    }
 
     async function consultarTecnico(codigo) {
         const response = await fetch('/Home/ConsultarTecnico', {
