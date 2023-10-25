@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Técnicos</h1>
+</div>
+<table id="miTabla" class="table table-hover">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Codigo Sucursal</th>
+            <th>Elementos Asignados</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody id="CuerpoTabla">
+    </tbody>
+</table>
+<script>
+
+    /**********************************************************************************************************
+     * 
+     *  REQUERIMIENTO
+     *  Para la visualización de los técnicos creados debe presentarse una tabla al iniciar la pantalla 
+     *  con la información básica del técnico, la sucursal asignada y la cantidad de elementos que tiene 
+     *  asignados
+     *
+     ***********************************************************************************************************/
+
+    $(document).ready(function () {
+        debugger;
+        console.log('inicio');
+        ConsultarTecnicos();
+    });
+
+
+    /**********************************************************************************************************
+     *
+     *  Función que consulta técnicos
+     *
+     ***********************************************************************************************************/
+
+    function ConsultarTecnicos() {
+
+        window.addEventListener('load', function () {
+            var url = "https://localhost:7054/Home/ConsultarTecnicoGeneral"; //Url del servicio
+            //Realiza peticion
+            fetch(url)
+                .then(response => {
+                    // Parsear la respuesta JSON
+                    return response.json();
+                })
+                .then(data => {
+                    EstableceTecnicos(data);
+                })
+                .catch(error => {
+                    // Manejar errores de red y otros errores
+                    Swal.fire('¡Error!', `${error}`, 'error');
+                });
+        });
+    }
+
+
+    /**********************************************************************************************************
+     *
+     *  Función que establece técnicos en la vista
+     *
+     ***********************************************************************************************************/
+
+    function EstableceTecnicos(data) {
+
+        // Manejar los datos recibidos
+        var html = ''; //Recorremos datos y lo adjuntamos a una cadena de txto html
+        data.forEach(item => {
+            html += `
+                    <tr>
+                        <td>${item.tecnico.codigo}</td>
+                        <td>${item.tecnico.nombre}</td>
+                        <td>${item.tecnico.codigoSucursal}</td>
+                        <td>${item.numeroDeElementos}</td>
+                        <td>
+                            <button onclick="ConsultaTecnico('${item.tecnico.codigo}')">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                            `;
+        });
+        $('#CuerpoTabla').html(html);
+    }
+
+
+    /**********************************************************************************************************
+     * 
+     *  REQUERIMIENTO
+     *  La creación, edición y eliminación del técnico debe realizarse en una ventana emergente 
+     *  que se despliegue desde un botón en la pantalla de visualización
+     *
+     ***********************************************************************************************************/
+    
+    function ConsultaTecnico(codigo){
+        // Redireccionar a otra página donde se realiza la consulta y actualización de datos de cierto código de técnico
+        window.location.href = `/Home/DetalleTecnico?Codigo=${codigo}`;
+    }
+
+
+</script>

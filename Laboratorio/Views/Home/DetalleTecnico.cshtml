@@ -1,0 +1,224 @@
+﻿@{
+    ViewData["Title"] = "Detalles Técnico";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+
+<div>
+    <!-- Agrega un contenedor para el spinner -->
+    <div id="spinner" class="spinner-container">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <label class="form-label">Codigo técnico</label>
+            <input type="text" required class="form-control" id="Codigo" placeholder="Código">
+        </div>
+        <div class="col-sm-10">
+            <label class="form-label">Nombre técnico</label>
+            <input type="text" required class="form-control" id="Nombre" placeholder="Nombre">
+        </div>
+        <div class="col-sm-10">
+            <label class="form-label">Sueldo base técnico</label>
+            <input type="number" required class="form-control" id="SueldoBase" placeholder="Sueldo Base">
+        </div>
+        <div class="col-sm-10">
+            <select id="CodigoSucursal" required class="form-control">
+            </select>
+        </div>
+        <div>
+            <button onclick="ActualizarTecnico()">Guardar Cambios</button>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div>
+            Elementos
+        </div>
+        <table id="miTabla" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody id="CuerpoTabla">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Añadir Elemento
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div class="form-group row">
+                        <div class="col-sm-10 visually-hidden">
+                            <label class="form-label">Codigo técnico</label>
+                            <select id="InputTecnico" class="form-control">
+                            </select>
+                        </div>
+                        <div class="col-sm-10">
+                            <label class="form-label">Código ELementos</label>
+                            <select id="InputElementos" class="form-control">
+                            </select>
+                        </div>
+                        <div class="col-sm-10">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="InputCantidad" placeholder="Cantidad">
+                        </div>
+                    </div>
+                    <div class="col-sm-10">
+                        <button onclick="AgregaElemento()">Agregar Elemento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    var html = "";
+
+    $(document).ready(function () {
+        // Obtén la URL actual
+        var url = new URL(window.location.href);
+        var codigo = url.searchParams.get("Codigo");
+
+        // Consultamos técnico
+        consultarTecnico(codigo);
+
+        // Consultamos Elementos del técnico
+        consultarElementos();
+
+        // Consultamos Sucursales
+        consultaSucursales();
+    });
+
+    async function consultarTecnico(codigo) {
+        const response = await fetch('/Home/ConsultarTecnico', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "Codigo": codigo })
+        });
+
+        const data = await response.json();
+
+        $('#Codigo').val(data.Tecnico.Codigo);
+        $('#Nombre').val(data.Tecnico.Nombre);
+        $('#SueldoBase').val(data.Tecnico.SueldoBase);
+        $('#CodigoSucursal').val(data.Tecnico.CodigoSucursal);
+    }
+
+    async function consultarElementos() {
+        const response = await fetch('/Home/ConsultarTodosElementos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        html = data.map(item => `<option value="${item.codigo}">${item.nombre}</option>`).join('');
+        $('#InputElementos').html(html);
+    }
+
+    async function consultaSucursales() {
+        const response = await fetch('/Home/ConsultaSucursales', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+
+        const data = await response.json();
+
+        html = data.map(item => `<option value="${item.codigo}">${item.nombre}</option>`).join('');
+        $('#CodigoSucursal').html(html);
+    }
+
+    async function AgregaElemento() {
+        var tecnico = $('#InputTecnico').val();
+        var elementos = $('#InputElementos').val();
+        var cantidad = $('#InputCantidad').val();
+
+        if (cantidad == 0) {
+            await Swal.fire({
+                icon: 'info',
+                title: 'Aviso',
+                text: '¡Ingrese cantidad!',
+                allowOutsideClick: false,
+                confirmButtonText: 'De acuerdo'
+            });
+            return;
+        }
+
+        const tecnicoElemento = {
+            Id: "0",
+            CodigoTecnico: `${tecnico}`,
+            CodigoElemento: `${elementos}`,
+            Cantidad: parseInt(cantidad),
+            CodigoElementoNavigation: "",
+            CodigoTecnicoNavigation: ""
+        };
+
+        try {
+            var result = await AgregarElementoBD(tecnicoElemento);
+
+            if (result == "Ok") {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: '¡Registrado con éxito!',
+                    allowOutsideClick: false,
+                    confirmButtonText: 'De acuerdo'
+                });
+                // Redirige a la página deseada
+                window.location.href = window.location.href;
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `${result}`,
+                    allowOutsideClick: false,
+                    confirmButtonText: 'De acuerdo'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al procesar la solicitud',
+                allowOutsideClick: false,
+                confirmButtonText: 'De acuerdo'
+            });
+        }
+    }
+
+    async function AgregarElementoBD(tecnicoElemento) {
+        const response = await fetch('/Home/AgregaELementos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tecnicoElemento)
+        });
+
+        const result = await response.json();
+        return result;
+    }
+
+
+
+</script>
