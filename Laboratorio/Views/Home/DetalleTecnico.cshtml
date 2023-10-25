@@ -248,6 +248,83 @@
         return result;
     }
 
+    /***********************************************************************************************************
+    *
+    * Actualiza tecnicos
+    *
+    ***********************************************************************************************************/
+    async function ActualizarTecnico() {
+        
+        var codigoTecnico = $('#Codigo').val();
+        var nombreTecnico = $('#Nombre').val();
+        var sueldoBaseTecnico = $('#SueldoBase').val();
+        var codigoSucursalTecnico = $('#CodigoSucursal').val();
+        //validamos que haya cantidad
+        if (codigo == "" || nombre == "" || sueldoBase == "" || codigoSucursal == "") {
+            const swal = await Swal.fire({
+                icon: 'info',
+                title: 'Aviso',
+                text: '¡Ingrese todos los datos!',
+                allowOutsideClick: false,
+                confirmButtonText: 'De acuerdo'
+            });
+            return;
+        }
+        const tecnico = {
+            Codigo = `${codigoTecnico}`,
+            Nombre = `${nombreTecnico}`,
+            SueldoBase = `${sueldoBaseTecnico}`,
+            CodigoSucursal = `${codigoSucursalTecnico}`
+        };
+
+        //Ejecutamos servicio
+        var result = await AgregarTecnicooBD(tecnico);
+        if (result == "Ok") {
+            const swal = await Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: '¡Actualizado con exito!',
+                allowOutsideClick: false,
+                confirmButtonText: 'De acuerdo'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirige a la página deseada
+                    window.location.href = window.location.href;
+                }
+            });;
+            return;
+        }
+        else {
+            Swal.fire('¡Error!', `${result}`, 'error');
+            const swal = await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `${result}`,
+                allowOutsideClick: false,
+                confirmButtonText: 'De acuerdo'
+            });
+            return;
+        }
+
+    }
+    /***********************************************************************************************************
+    *
+    * consume servicio
+    *
+    ***********************************************************************************************************/
+    async function gregarTecnicooBD(tecnico) {
+        var Variables = `?Codigo=${tecnico.Cantidad}&Nombre=${tecnico.Nombre}&SueldoBase=${tecnico.SueldoBase}&CodigoSucursal=${tecnico.CodigoSucursal}`;
+        const response = await fetch(`/Home/ModificaTecnico${Variables}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        return result;
+    }
 
 
 </script>
